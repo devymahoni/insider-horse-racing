@@ -2,7 +2,7 @@
 
 ## Scope and interpretation
 
-AI-assisted audit for WP-005, based on main `f0af56d510b4ef657c68968fa015f5b6ce9e6a41` plus the WP-005 working-tree changes. Source: privately supplied *Insider One Case Study - Front-end Developer.pdf*, printed pages 1–2, read in full. The PDF remains excluded from Git.
+AI-assisted audit, updated for the local maintainability package based on main `a1cb6de782181bf8b82e6dd8187630f4b06f99be`, including preserved gallop work. The original WP-005 results below remain explicitly historical where identified. Source: privately supplied *Insider One Case Study - Front-end Developer.pdf*, printed pages 1–2, read in full. The PDF remains excluded from Git.
 
 IDs match [REQUIREMENTS.md](REQUIREMENTS.md). **Pass** means the stated observable criterion is supported by the named checks/inspection; it is not a proof of every possible input or a claim of human acceptance. **Unverified** identifies evidence not collected. No failed mandatory criterion was observed in implementation verification. Independent QA and Review are subsequent gates and must report their own outcomes.
 
@@ -30,7 +30,7 @@ All implementation paths below are relative to `src/features/racing/` unless sta
 | S14 Mandatory | P2 Technical Expectations 1: Vuex/Pinia state | `state/racingStore.ts`, `components/racingComposition.ts` | Pinia authority inspected; store/component integration and real browser actions | Pass: Pinia |
 | S15 Mandatory | P2 Technical Expectations 2: Vue components | `components/*.vue`, root `src/App.vue` | Separate controls, pool, track, program, results and page composition; build/type check | Pass |
 | S16 Quality expectation | P2 Additional Notes 1: organized/adaptable components/state | Approved four boundaries in ADR 0002 | Source boundary inspection; injected randomness/runtime tests; no business logic in rendering | Pass by inspection; future scalability unproven |
-| S17 Bonus | P2 Bonus 1–3: unit, E2E, visual tests | Existing 194 tests; `e2e/racing.spec.ts` | Unit/E2E passed;16 state/viewport screenshots inspected against PDF example and accepted UI | Unit/E2E Pass; visual inspection Pass; pixel-regression baselines Unverified/not implemented |
+| S17 Bonus | P2 Bonus 1–3: unit, E2E, visual tests | Existing 197 unit tests; `e2e/racing.spec.ts`, `e2e/gallop.spec.ts`, `e2e/visual.spec.ts` | Unit/E2E passed;16 state/viewport screenshots inspected against PDF example and accepted UI | Unit/E2E Pass; three macOS Chromium pixel baselines added; Linux pixel baselines unverified |
 
 Page 2 Additional Notes 2 encourages asking questions; it is process guidance, not an additional application feature. The Example image guides recognizable organization, not pixel-exact styling. The implementation retains Horse Pool, ten-lane Track, Program, Results, and top controls. Results below the track trade desktop simultaneity for wider readable tables; mobile stacks the track first and discloses the roster. The accepted typography/palette intentionally differ from the example.
 
@@ -48,7 +48,13 @@ Page 2 Additional Notes 2 encourages asking questions; it is process guidance, n
 
 Specific simulation formulas, stable IDs, tie policy, and runtime safety were approved in later work-package conversations; the historical requirements document intentionally preserves what was undecided when it was written. Displayed seconds represent normalized active profile time, not real-world race minutes or wall-clock time including pauses.
 
-## Executed local checks
+## Current verification scope
+
+The preserved gallop adds two component assertions and two Chromium gait cases: 196 unit/integration tests and eight Chromium E2E cases. Three deterministic visual comparisons and two lightweight Firefox/WebKit smoke cases are separate projects. They avoid duplicating the complete Chromium suite or assuming macOS font baselines work on Linux. The subsequent state-aware control refinement adds one behavior-focused component case (197 total), preserving one primary button and guarded native events. Current results, candidate-image approval limits, and the blocked Ubuntu visual completion plan are recorded in [QUALITY_REVIEW.md](QUALITY_REVIEW.md).
+
+Historical GitHub CI is now verified: [push run](https://github.com/devymahoni/insider-horse-racing/actions/runs/44916926289) and [PR run](https://github.com/devymahoni/insider-horse-racing/actions/runs/44916978887) passed at commit `37c43918b311a9977340591b8530793bde4c4816`, whose source tree matches the later main squash commit. These runs covered 194 unit tests and six E2E cases. The current uncommitted updates have not run remotely.
+
+## Historical WP-005 local checks
 
 Implementation verification uses Node 24.15.0, npm 11.12.1, Playwright 1.65.1 Chromium, and axe integration 4.14.0 (axe-core 4.14.1). Only the two direct test tools were added as development dependencies; existing runtime dependencies and engine/store/runtime source remain unchanged.
 
@@ -73,4 +79,4 @@ Existing runtime tests verify duplicate-loop prevention, cancelled frame handles
 
 Performance numbers are environment-specific and are attached to the E2E run. No optimization was introduced without a confirmed defect. CPU throttling is emulation, not a physical low-end-device test.
 
-**Unverified:** manual screen readers, physical devices, Safari/Firefox, exhaustive text zoom, extended memory profiling, GitHub/Linux CI execution, and Claude Code runtime compatibility. The CI workflow is authored and locally checked; it has not been pushed or run on GitHub. Browser installation and E2E were validated locally before including their CI steps.
+**Unverified:** manual screen readers, physical devices, the Safari application, exhaustive text zoom, extended memory profiling, Linux visual baselines, current-uncommitted-change CI execution, and Claude Code runtime compatibility. Firefox and Playwright WebKit now have scoped local smoke coverage. Historical GitHub/Linux Chromium CI passed at the linked commit; that does not verify unpublished changes or complete cross-browser parity.
