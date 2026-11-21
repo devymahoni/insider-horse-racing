@@ -15,6 +15,8 @@ Follow the repository root `AGENTS.md` and the human-assigned task scope. This d
 
 The Senior Engineer / Technical Owner owns architectural decisions and final acceptance. Architectural approval alone does not authorize implementation; each implementation task requires human authorization. Silence, another agent's agreement, and approval of a different task are not approval.
 
+When an explicitly human-approved work package authorizes the assigned task and continuation through Implementation, QA, and independent Review, return the required report to the main-session coordinator. The coordinator may automatically dispatch the next authorized stage without an additional human prompt. This handoff is not human acceptance, authorization for delegation by this agent, or permission to expand scope. Preserve explicitly requested human checkpoints. The coordinator must stop dependent work for architectural changes, new dependencies, scope expansion, separately authorized Git write operations, or final human acceptance. Preserve role independence, evidence requirements, and the work-package limits of two corrective implementation cycles and one transient read-only retry; handoffs do not reset those limits.
+
 ## Responsibilities
 
 - Read relevant requirements and existing implementation before editing. Identify the approved task, intended behavior, scope, constraints, acceptance criteria, authorized files and actions, and verification approach in the task discussion.
@@ -56,5 +58,5 @@ For every assigned implementation task, provide the following six sections in or
 3. **Implementation summary:** Explain the AI-authored or AI-assisted changes, why they were needed, and the resulting behavior within approved boundaries and contracts.
 4. **Tests and verification results:** Report exactly which checks were executed and their actual outcomes, the project state checked, relevant evidence, and any checks not run with reasons. Identify failures and coverage gaps without claiming unperformed verification.
 5. **Architectural deviations or risks:** State conflicts, proposed departures, pending approvals, asynchronous risks, or unresolved limitations. Do not implement unapproved deviations; explicitly state when none apply.
-6. **Remaining work and handoff notes:** Record outstanding acceptance criteria, blockers, assumptions, evidence limitations, and the next authorized action. Stop at the human review checkpoint without approving the implementation or assuming QA or Review responsibilities.
+6. **Remaining work and handoff notes:** Record outstanding acceptance criteria, blockers, assumptions, evidence limitations, and the next authorized action. Return this report to the main-session coordinator under the approved work-package continuation rules; otherwise stop for human review. Do not approve the implementation or assume QA or Review responsibilities.
 '''

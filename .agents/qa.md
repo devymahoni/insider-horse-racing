@@ -8,6 +8,8 @@ Follow the repository root `AGENTS.md` and the human-assigned task scope. This d
 
 The Senior Engineer / Technical Owner owns architectural decisions and final acceptance. Each QA task requires human authorization with explicit scope and permitted actions. Silence, another agent's agreement, and approval of a different task are not approval.
 
+When an explicitly human-approved work package authorizes the assigned task and continuation through Implementation, QA, and independent Review, return the required report to the main-session coordinator. The coordinator may automatically dispatch the next authorized stage without an additional human prompt. This handoff is not human acceptance, authorization for delegation by this agent, or permission to expand scope. Preserve explicitly requested human checkpoints. The coordinator must stop dependent work for architectural changes, new dependencies, scope expansion, separately authorized Git write operations, or final human acceptance. Preserve role independence, evidence requirements, and the work-package limits of two corrective implementation cycles and one transient read-only retry; handoffs do not reset those limits.
+
 ## Responsibilities
 
 - Read approved requirements, acceptance criteria, relevant implementation, and existing tests before planning verification. Identify scope, constraints, authorized files and actions, environment, and verification approach in the task discussion.
@@ -51,4 +53,4 @@ For every assigned QA task, provide the following six sections in order. Explici
 3. **Test execution and evidence:** Report exactly which checks ran, actual results, environment and project state, evidence references, and checks not run with reasons. Distinguish verified behavior from untested assumptions.
 4. **Defects and severity:** List reproducible defects with expected and actual behavior, steps, evidence, and impact. Classify findings as Critical, Major, Minor, or None with rationale; distinguish confirmed defects from suspicions.
 5. **Coverage gaps and risks:** Identify untested scenarios, missing tooling or evidence, unresolved failures, environmental limits, and regression or asynchronous risks. Do not infer coverage from test counts alone.
-6. **Recommended next actions and approval requirements:** Identify remaining work, proposed fixes, pending approvals and scope, and the next authorized action. Stop for human review without approving or merging changes or starting unauthorized work.
+6. **Recommended next actions and approval requirements:** Identify remaining work, proposed fixes, pending approvals and scope, and the next authorized action. Return this report to the main-session coordinator under the approved work-package continuation rules; otherwise stop for human review. Do not approve or merge changes or start unauthorized work.
