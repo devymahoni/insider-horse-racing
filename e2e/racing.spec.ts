@@ -29,8 +29,10 @@ async function assertSchedule(page: Page) {
 
 async function assertLayout(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
-  for (const name of ['Generate', 'Start', 'Pause', 'Resume']) {
-    const box = await button(page, name).boundingBox()
+  const controls = page.locator('.control-buttons button')
+  await expect(controls).toHaveCount(2)
+  for (const control of await controls.all()) {
+    const box = await control.boundingBox()
     expect(box).not.toBeNull()
     expect(box!.x).toBeGreaterThanOrEqual(0)
     expect(box!.x + box!.width).toBeLessThanOrEqual(await page.evaluate(() => innerWidth))
@@ -48,29 +50,48 @@ test('real-time six-round workflow, guarded actions, retained results and access
   await expect(page).toHaveTitle(/Insider Racing/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Insider Racing')
   await expect(phase(page)).toHaveText('Idle')
-  for (const name of ['Start', 'Pause', 'Resume']) await expect(button(page, name)).toBeDisabled()
+  await expect(button(page, 'Start Race')).toBeDisabled()
   await scan(page, 'idle', info)
   await button(page, 'Generate').focus()
   await page.keyboard.press('Enter')
   await expect(phase(page)).toHaveText('Ready')
   await assertSchedule(page)
   await scan(page, 'ready', info)
-  await button(page, 'Start').click()
+  const primary = page.locator('.primary-action')
+  const primaryElement = await primary.elementHandle()
+  await primary.focus()
+  await page.keyboard.press('Enter')
   await expect(phase(page)).toHaveText('Running')
-  for (const name of ['Generate', 'Start', 'Resume']) await expect(button(page, name)).toBeDisabled()
+  await expect(button(page, 'Pause')).toBeFocused()
+  expect(await primary.evaluate((element, original) => element === original, primaryElement)).toBe(true)
+  await page.keyboard.down('Enter')
+  await page.keyboard.down('Enter')
+  await page.keyboard.up('Enter')
+  // The first fresh Enter pauses; its repeated keydown must not immediately resume.
+  await expect(phase(page)).toHaveText('Paused')
+  await expect(button(page, 'Resume')).toBeFocused()
+  await page.keyboard.press('Space')
+  await expect(phase(page)).toHaveText('Running')
+  await expect(button(page, 'Pause')).toBeFocused()
+  await expect(button(page, 'Generate')).toBeDisabled()
+  await expect(button(page, 'Pause')).toBeEnabled()
   const initial = await progress(page)
   await expect.poll(() => progress(page)).not.toEqual(initial)
   const runningTop = await page.locator('#race-track').evaluate((element) => element.getBoundingClientRect().top)
-  await button(page, 'Pause').click()
+  await page.keyboard.press('Space')
   await expect(phase(page)).toHaveText('Paused')
+  await expect(button(page, 'Resume')).toBeFocused()
   expect(await page.locator('#race-track').evaluate((element) => element.getBoundingClientRect().top)).toBe(runningTop)
   const frozen = await progress(page)
   // A bounded observation interval proves absence of movement, rather than waiting for readiness.
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 250)))
   expect(await progress(page)).toEqual(frozen)
-  for (const name of ['Generate', 'Start', 'Pause']) await expect(button(page, name)).toBeDisabled()
+  await expect(button(page, 'Generate')).toBeDisabled()
+  await expect(button(page, 'Resume')).toBeEnabled()
   await scan(page, 'paused', info)
-  await button(page, 'Resume').click()
+  await page.keyboard.press('Enter')
+  await expect(button(page, 'Pause')).toBeFocused()
+  expect(await primary.evaluate((element, original) => element === original, primaryElement)).toBe(true)
   await expect.poll(() => progress(page)).not.toEqual(frozen)
   // Observe each prefix, so a final count alone cannot hide missing/duplicate round publication.
   for (let count = 1; count <= 6; count++) {
@@ -84,7 +105,7 @@ test('real-time six-round workflow, guarded actions, retained results and access
     const times = await page.locator('[data-result-round]').nth(index).locator('tbody .numeric').allTextContents()
     expect(Number.parseFloat(times.at(-1)!)).toBe(targets[index])
   }
-  await expect(button(page, 'Start')).toBeDisabled()
+  await expect(button(page, 'Race complete')).toBeDisabled()
   await scan(page, 'completed', info)
   await button(page, 'Generate').click()
   await expect(phase(page)).toHaveText('Ready')
@@ -113,7 +134,7 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(page.locator('#horse-roster')).toBeHidden()
       await expect(page.getByRole('heading', { name: 'Horse Pool' }).locator('..')).toContainText('20 / 20')
     }
-    await button(page, 'Start').click()
+    await button(page, 'Start Race').dblclick()
     await page.clock.runFor(600)
     await expect(phase(page)).toHaveText('Running')
     await assertLayout(page)
@@ -148,7 +169,7 @@ for (const width of [320, 390, 768, 1440]) {
 test('bounded rendering measurements and throttled-device observation', async ({ page }, info) => {
   await page.goto('/')
   await button(page, 'Generate').click()
-  await button(page, 'Start').click()
+  await button(page, 'Start Race').click()
   const measure = () => page.evaluate(async () => {
     const intervals: number[] = []
     const longTasks: number[] = []
@@ -186,5 +207,5 @@ test('bounded rendering measurements and throttled-device observation', async ({
   await writeFile(info.outputPath('rendering-measurements.json'), measurements)
   await info.attach('rendering-measurements', { body: measurements, contentType: 'application/json' })
   // Cleanup semantics are independently covered by injected-runtime listener/frame tests.
-  if (await button(page, 'Pause').isEnabled()) await button(page, 'Pause').click()
+  if (await phase(page).textContent() === 'Running') await button(page, 'Pause').click()
 })

@@ -16,11 +16,10 @@ Use **Node.js 24.15.0** (the CI baseline) and npm. The complete supported Node r
 
 ```sh
 npm ci
-npx playwright install chromium
 npm run dev
 ```
 
-Open the URL printed by Vite. Generate creates the pool/program; Start runs all six rounds. Pause/Resume preserves active progress. Generate is disabled while Running/Paused. After completion, Generate clears results and creates a new schedule; replay is intentionally unsupported.
+Open the URL printed by Vite. Generate creates the pool/program. One persistent racing button changes from **Start Race** to **Pause** and **Resume**, using the existing Pinia guards. It has no active action in Idle, Completed, Error, or Disposed; Generate remains available for allowed recovery. Start Race runs all six rounds, and Pause/Resume preserves active progress. Generate is disabled while Running/Paused. After completion, Generate clears results and creates a new schedule; replay is intentionally unsupported.
 
 ## Commands
 
@@ -32,7 +31,11 @@ Open the URL printed by Vite. Generate creates the pool/program; Start runs all 
 | `npm run build` | Type-check and build production files into `dist/` |
 | `npm run preview` | Serve the existing production build locally |
 | `npm run test:e2e` | Chromium workflow, axe, responsive screenshots, and bounded rendering measurements |
+| `npm run test:visual` | Three deterministic Chromium screenshot comparisons (macOS baselines) |
+| `npm run test:smoke` | Lightweight Firefox and WebKit lifecycle/layout smoke tests |
 | `npx playwright show-report` | Open the local Playwright report after E2E |
+
+For browser tests, install the required browsers once with `npx playwright install chromium firefox webkit`. Browser binaries are not needed to run the application.
 
 Build before E2E: its managed web server serves `dist/` at `127.0.0.1:4173` and requires that port to be free. On a fresh Linux host, `npx playwright install --with-deps chromium` also installs required browser system libraries. Browser downloads require network access. E2E uses one worker and no automatic retries; failures retain traces/screenshots. Reports and `test-results/` are ignored by Git.
 
@@ -69,15 +72,21 @@ Balanced remaining-capacity scheduling satisfies all sixty slots without retries
 
 The runtime auto-pauses on a hidden tab or a frame gap over one second; Resume is explicit. Component disposal releases runtime resources. Unit tests verify cleanup, stale callbacks, boundary races, and invalid inputs. Browser tests exercise the actual production build: one full real-time race sequence plus separately labelled controlled-browser-clock responsive cases. Axe checks complement keyboard and screenshot inspection; they do not certify complete accessibility.
 
-The CI workflow runs installation, unit tests, type checking, build, Chromium installation, and E2E/axe checks on pushes/PRs. Its execution in GitHub remains unverified until this work is published. Current local evidence and limitations are recorded in the [traceability matrix](docs/REQUIREMENTS_TRACEABILITY.md).
+The CI workflow runs installation, unit tests, type checking, build, Chromium installation, and E2E/axe checks on pushes/PRs. Both [push](https://github.com/devymahoni/insider-horse-racing/actions/runs/44916926289) and [PR](https://github.com/devymahoni/insider-horse-racing/actions/runs/44916978887) Quality runs passed for commit `37c43918b311a9977340591b8530793bde4c4816` (the same source tree later squash-merged as `a1cb6de`). Those runs verified the then-committed 194 unit and six E2E tests, not the newer local gallop/refinement changes.
+
+`test:e2e` explicitly selects Chromium. Cross-browser smoke tests and screenshot comparisons are separate commands; they are not silently added to Linux CI. The three generated candidate screenshot baselines use the accepted design foundation, deterministic randomness/time, device scale factor 1, loaded system fonts, and frozen decorative gait. The new gallop artwork and individual images await Technical Owner visual acceptance for this package; generation is not human approval. They are macOS-specific because font rasterization differs across operating systems. Ubuntu visual execution is currently blocked: this macOS environment has no Linux/container runtime, and no reviewed Linux goldens exist. The existing Ubuntu workflow still runs the explicitly selected Chromium suite; it does not claim to execute visual comparisons. See the pinned-container completion plan in [QUALITY_REVIEW.md](docs/QUALITY_REVIEW.md). Ordinary visual runs set `updateSnapshots: none`, so missing or changed references fail instead of being accepted automatically. Review intentional differences with the Technical Owner before updating baselines; do not update snapshots to bypass a failure.
+
+The current local verification, measurements, and simplicity decisions are in [QUALITY_REVIEW.md](docs/QUALITY_REVIEW.md); assessment mapping remains in the [traceability matrix](docs/REQUIREMENTS_TRACEABILITY.md).
+
+On mobile, the footer’s **Back to race controls** link scrolls and focuses the existing controls without covering the track with a sticky toolbar. Generate stays separate from the state-aware racing button. The same native button remains mounted as Start Race/Pause/Resume changes, preserving keyboard focus; repeated Enter and native multi-clicks do not dispatch repeated activations.
 
 ## Known limitations
 
 - No backend, persistence, betting, championship scoring, multiplayer, replay, or playback-speed controls.
-- Physical devices, Safari/Firefox, manual screen readers, and exhaustive text-zoom/contrast testing are not verified.
-- Visual screenshots are inspected artifacts, not approved pixel-regression baselines.
+- Physical devices, the Safari application, manual screen readers, and exhaustive text-zoom/contrast testing remain unverified. Firefox and Playwright WebKit have smoke coverage, not full Chromium-suite parity.
+- Three macOS Chromium screenshots now have automatic pixel comparisons; Linux screenshot baselines remain unverified. Other state screenshots remain inspection artifacts.
 - Short frame/CPU-throttle samples are environment-specific observations, not performance guarantees or proof of no memory leaks.
-- Horse artwork is approximately 524 kB; no speculative optimization or new rendering layer was introduced.
+- The still-used static horse artwork is approximately 424 kB after lossless recompression; decoded RGBA pixels are unchanged. The shared original eight-frame gallop atlas is approximately 8 kB, with CSS-controlled decorative motion and unchanged engine-owned progress.
 - The original assessment PDF is intentionally excluded from Git; source references require the privately supplied document.
 
 AI-assisted development and human approval responsibilities are documented in [AI_WORKFLOW.md](docs/AI_WORKFLOW.md). Technical Owner acceptance remains the delivery gate.
