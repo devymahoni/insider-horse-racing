@@ -11,4 +11,4 @@ if (transform && typeof transform === 'object') {
     return handler.call(this, code, id, { moduleType: options?.moduleType ?? 'js', ...options, ssr: false })
   }
 }
-export default defineConfig({ plugins: [vuePlugin] })
+export default defineConfig({ plugins: [vuePlugin], test: { include: ['src/**/*.test.ts'] } })

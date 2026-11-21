@@ -4,11 +4,18 @@ import type { Horse } from '../engine/models'
 import type { RacePhase, RaceResult } from '../state/racingStore'
 const props = defineProps<{ results: readonly RaceResult[]; horses: readonly Horse[]; phase: RacePhase }>()
 const roster = computed(() => new Map(props.horses.map((horse) => [horse.id, horse])))
+const announcement = computed(() => {
+  const latest = props.results.at(-1)
+  if (!latest) return ''
+  const winner = roster.value.get(latest.finishers[0]!.horseId)?.name
+  return `Round ${latest.roundNumber} complete. Winner: ${winner}. ${props.results.length} of 6 rounds complete.`
+})
 </script>
 
 <template>
   <section class="panel" aria-labelledby="results-heading">
-    <div class="panel-heading"><h2 id="results-heading">Race Results</h2><span class="meta" aria-live="polite">{{ results.length }} / 6 complete</span></div>
+    <div class="panel-heading"><h2 id="results-heading">Race Results</h2><span class="meta">{{ results.length }} / 6 complete</span></div>
+    <p class="sr-only" role="status" aria-atomic="true">{{ announcement }}</p>
     <p v-if="!results.length" class="empty-state">{{ phase === 'Running' || phase === 'Paused' ? 'The first race is underway. Full results appear when the round finishes.' : 'The finishing order will appear here after each round.' }}</p>
     <div v-else class="results-list">
       <details v-for="result in results" :key="result.roundNumber" :open="result.roundNumber === results.length" data-result-round>
@@ -24,7 +31,7 @@ const roster = computed(() => new Map(props.horses.map((horse) => [horse.id, hor
         </table>
       </details>
     </div>
-    <p v-if="phase === 'Completed'" class="completion-note" role="status">All six rounds are complete. Generate a new schedule to race again.</p>
+    <p v-if="phase === 'Completed'" class="completion-note">All six rounds are complete. Generate a new schedule to race again.</p>
   </section>
 </template>
 
