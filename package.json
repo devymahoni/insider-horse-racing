@@ -10,7 +10,9 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test --project=chromium",
+    "test:visual": "playwright test --project=visual-chromium",
+    "test:smoke": "playwright test --project=firefox-smoke --project=webkit-smoke"
   },
   "dependencies": {
     "pinia": "^4.0.3",
