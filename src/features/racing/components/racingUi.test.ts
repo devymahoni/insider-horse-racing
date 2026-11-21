@@ -46,6 +46,8 @@ describe('racing presentation', () => {
     expect(html).toContain('1200')
     expect(html).toContain('Finish')
     expect(html).toContain('start-line')
+    expect(html).toContain('Round 1 of 6 racing')
+    expect(html).toContain('role="status" aria-atomic="true"')
   })
   it('shows every finishing position and preserves prior round results', async () => {
     const results = schedule.rounds.slice(0, 2).map((round) => ({ roundNumber: round.roundNumber, finishers: round.horseIds.map((horseId, index) => ({ horseId, rank: index + 1, finishTimeMs: 4000 + index * 100 })) }))
@@ -57,6 +59,7 @@ describe('racing presentation', () => {
     expect(html.match(/class="second"/g)).toHaveLength(2)
     expect(html.match(/class="third"/g)).toHaveLength(2)
     expect(html).toContain('4.000 s')
+    expect(html).toContain(`Round 2 complete. Winner: ${horses.find((horse) => horse.id === results[1]!.finishers[0]!.horseId)!.name}. 2 of 6 rounds complete.`)
   })
   it('keeps the full roster available behind a count-labelled disclosure', async () => {
     const root = node('root'); const app = renderer.createApp(HorsePool, { horses }); app.mount(root)
